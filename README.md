@@ -2,12 +2,12 @@
 
 A miniature metro-station gate system that counts people entering and leaving an area using ultrasonic sensors, authenticates entry using RFID, and controls an automatic gate using a stepper motor. An LCD displays the current count/status, while an RGB LED and buzzer provide visual/audio alerts.
 
-> **Target board used for this reference implementation:** STM32 NUCLEO-F401RE (STM32F401RE, ARM Cortex-M4).  
-> The code is written at register level and does **not** use the STM32 HAL.
+> **Target board:** STM32 NUCLEO-F401RE (STM32F401RE, ARM Cortex-M4).  
+> This repository documents the hardware architecture, interfacing, and operating concept of the project.
 
 ## Demo / Prototype
 
-The original prototype video was used as the reference for the project concept. Add your own demo video to the repository if you have it, for example:
+The project was physically implemented as an STM32-based metro entry/exit prototype. The original firmware source is no longer available, so this repository focuses on the project design, hardware interfacing, and working principle.
 
 ```text
 media/demo.mp4
@@ -131,7 +131,7 @@ Person detected by Exit US
        Close gate
 ```
 
-## Pin Configuration Used by the Example Code
+## Hardware Pin Configuration
 
 ### RC522 / SPI1
 
@@ -218,37 +218,26 @@ Use the ULN2003 driver board and a suitable external motor supply. Do not power 
 
 Use current-limiting resistors for the RGB LED channels.
 
-## Bare-Metal Implementation
+## Embedded / Bare-Metal Concepts
 
-The project demonstrates register-level programming for:
+The project was developed around register-level STM32 concepts rather than an Arduino-style framework. The main technical areas involved are:
 
-- GPIO
-- SPI1
-- SysTick
-- DWT cycle counter for microsecond timing
-- LCD GPIO interface
+- GPIO configuration
+- SPI1 communication for RFID
+- SysTick-based timing
+- DWT cycle counter concepts for microsecond timing
+- LCD GPIO interfacing
 - HC-SR04 pulse measurement
 - RC522 SPI communication
 - Stepper motor sequencing
 
-Instead of functions such as `HAL_GPIO_WritePin()`, the program directly accesses STM32 peripheral registers such as:
+These are the key embedded concepts to discuss in an interview. The original firmware source is not included because it is no longer available.
 
-```c
-GPIOB->BSRR = ...;
-RCC->AHB1ENR |= ...;
-SPI1->CR1 = ...;
-```
+## Firmware Source Status
 
-This makes the project useful for learning how MCU peripherals work below the abstraction layer.
+The original firmware source code is **not available anymore**. The hardware project was completed, but the original source files were lost.
 
-## Software Requirements
-
-- STM32CubeIDE or another ARM GCC-based STM32 development environment
-- STM32F4 CMSIS/device header files
-- ST-LINK debugger/programmer integrated in the Nucleo board
-- `stm32f4xx.h` from the STM32F4 device package
-
-The supplied `main.c` is intended to be placed inside an STM32F401RE project generated with the appropriate startup code and linker script.
+For that reason, this repository intentionally does **not** present newly generated code as the original project firmware. If firmware is recreated in the future, it should be clearly labeled as recreated/reference firmware and tested on the hardware before being used as an exact project record.
 
 ## Repository Structure
 
@@ -257,9 +246,6 @@ smart-metro-rfid-baremetal/
 |
 |-- README.md
 |-- LICENSE
-|-- src/
-|   `-- main.c
-|
 |-- docs/
 |   |-- wiring_diagram.png
 |   `-- project_overview.png
@@ -268,30 +254,19 @@ smart-metro-rfid-baremetal/
     `-- demo.mp4              # optional: add your own video
 ```
 
-## How to Use
+## Project Demonstration Flow
 
-1. Create an STM32CubeIDE project for **NUCLEO-F401RE / STM32F401RE**.
-2. Configure the project for the device's CMSIS headers and startup files.
-3. Replace the generated application `main.c` with the supplied `src/main.c`.
-4. Build the project.
-5. Connect the peripherals according to the pin table.
-6. Flash the Nucleo board using ST-LINK.
-7. Present an RFID card at the RC522 reader.
-8. Walk through the entry ultrasonic sensing area.
-9. Observe the LCD count, RGB LED, and motorized gate.
-10. Walk through the exit sensor and verify that the count decreases.
+For an interview or demonstration, the intended sequence is:
 
-## RFID Configuration
+1. Power the STM32 NUCLEO-F401RE and connected peripherals.
+2. A person is detected by the entry HC-SR04 sensor.
+3. The user presents an RFID card to the RC522 reader.
+4. After authorization, the gate is opened using the stepper motor and ULN2003 driver.
+5. The LCD displays the system status and people count.
+6. The exit HC-SR04 detects a person leaving and the count is decreased, without allowing the count to become negative.
+7. A prolonged obstruction in the sensing area produces the documented warning indication.
 
-The reference code is initially configured to accept any readable RFID card:
-
-```c
-#define RFID_ACCEPT_ANY_CARD 1
-```
-
-For a real access-control system, change this to `0` and place the authorized UID in the UID comparison section.
-
-**Do not publish private credentials or sensitive production access data in a public repository.**
+This section describes the project operation; it is not a claim that the currently stored repository contains the original firmware.
 
 ## Expected LCD Messages
 
@@ -322,20 +297,16 @@ If the system detects that a person remains in the sensing area for approximatel
 
 This is intended to demonstrate abnormal-condition detection, similar to an automated metro gate monitoring system.
 
-## Limitations of This Reference Implementation
+## Original Firmware Note
 
-This code was generated from the project concept and component list because the original source code was not available. Therefore, it should be treated as a **reference implementation** and tested/tuned on the actual hardware before being described as the exact original firmware.
+The project was completed as a hardware/embedded prototype, but the original firmware source is no longer available. Therefore:
 
-The following may require adjustment for your hardware:
+- The repository does not claim that any recreated code is the original firmware.
+- The documented pin mapping and system behavior are retained as project documentation.
+- Any future recreated firmware should be labeled **recreated/reference firmware**.
+- Hardware-specific timings, RFID UID handling, motor steps, and sensor thresholds should be validated on the actual prototype before use.
 
-- Ultrasonic sensor detection distance
-- Stepper motor direction
-- Number of steps required for the physical gate angle
-- RFID card UID
-- LCD wiring
-- RGB LED common-anode/common-cathode logic
-- Buzzer active/high or active/low behavior
-- Timing values
+Being transparent about the missing source code keeps the repository aligned with the actual project history.
 
 ## Future Improvements
 
@@ -368,7 +339,7 @@ This project provides practical experience with:
 
 ## Author
 
-**Your Name**  
+**Swarthik**  
 Electronics and Communication Engineering  
 
 Replace this section with your GitHub username, college, and project team members if applicable.
